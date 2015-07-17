@@ -1,0 +1,39 @@
+ <div class="row">
+		<div class="centered ten columns" >
+
+	<h2>Countires Data</h2>
+<div id="table-wrapper">
+  <div id="table-scroll">
+	<table  class="striped " class="rounded">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Country Code</th>
+				<th>Capital</th>
+				<th>Area in Km</th>
+				<th>Population</th>
+				<th>Continents</th>
+			</tr>
+		</thead>
+		<tbody>
+	<tr ng-repeat="r in result" >
+		<td><a href="#/countries/{{r.countryCode }}/{{r.capital }}">{{r.countryName}}</a></td>
+		<td><a href="#/countries/{{r.countryCode }}/{{r.capital }}">{{r.countryCode }}</a></td>
+		<td><a href="#/countries/{{r.countryCode }}/{{r.capital }}">{{r.capital }}</a></td>
+		<td><a href="#/countries/{{r.countryCode }}/{{r.capital }}">{{ r.areaInSqKm }}</a></td>
+		<td><a href="#/countries/{{r.countryCode }}/{{r.capital }}">{{ r.population }}</a></td>
+		<td><a href="#/countries/{{r.countryCode }}/{{r.capital }}">{{ r.continent }}</a></td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+	</div>
+	</div>
+
+	<div class="centered three columns">
+               <div class="medium  btn primary"><a href="#/">Home</a></div>
+
+              
+
+			</div>
+	</div>

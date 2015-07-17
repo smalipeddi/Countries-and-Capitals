@@ -18,17 +18,29 @@ myapp.config(function($locationProvider, $routeProvider) {
   return function() {
     return $http.get('http://api.geonames.org/countryInfoJSON?username=smekala');
   };
-}).factory("capitalsData", function($http) {
+}).factory("capitalsData", function($http,countryData) {
   return function() {
-  
+   countryData().success(function($scope,data) {
+     var jsonData =data;
+     /*console.log(jsonData.geonames);*/
+      $scope.result = jsonData.geonames;
+
+         for (var key in $scope.result)
+        {
+          if ($scope.result.hasOwnProperty(key))
+          {
+          // here you have access to
+          var cName = $scope.result[key].countryName;
+          }
+        }
         var url = "http://api.geonames.org/search?";
         var request = {
             username : 'smekala',
             q :'bellary',
-            name:'India'
+            name:cName
         };
       return $http.post('http://api.geonames.org/searchJSON?username=smekala&q=bellary&name=bellary&isNameRequired')
-
+});
 };
  })
 .controller('countryCtrl', ['$scope', 'countryData', function($scope, countryData) {

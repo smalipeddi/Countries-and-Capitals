@@ -1,0 +1,28 @@
+<div class="row">
+<div class="centered ten columns">
+<h1 >Countries and Capitals</h1>
+
+<!-- <div class="centered three columns">
+           <div class="medium btn primary"><a href="#/countries">Browse Countires</a></div>
+       </div> -->
+   </div>
+</div>
+<div class="row">
+	<div class="centered twelve columns" >
+		<div>
+			<div ng-repeat="r in capitalData">
+				<p><h1>{{r.countryCode}}</h1></p>
+				<p><label>Population of country  : </label> {{r.population }}</p>
+				<p><label>Area : </label>{{r.areaInSqKm  }}</p> 
+				<p><label> Capital : </label>{{ r.capital}}</p>
+				<p><label>Population of Capital </label>{{ r.population }}</p>
+				<p><label> 3 Neighbors : </label>{{ r.continent }}</p> 
+			</div>
+		</div>
+	</div>
+
+<div class="centered three columns">
+	<div class="medium  btn primary"><a href="#/">Home</a></div>
+</div>
+</div>
+
