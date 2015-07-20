@@ -1,75 +1,100 @@
-  var myapp = angular.module('cacApp', ['ngRoute', 'ngAnimate']);
-  myapp.config(function($locationProvider, $routeProvider) {
-    /*$locationProvider.hashPrefix('!');*/
-    $routeProvider.when('/', {
-      templateUrl: './views/home.html'
+angular.module('CaCApp', ['ngRoute'])
 
-    });
-    $routeProvider.when('/countries', {
-      templateUrl: './views/country.html',
-      controller: 'countryCtrl'
-    });
-    $routeProvider.when('/countries/:country/:capital', {
-      templateUrl: './views/capitals.html',
-      controller: 'capitalCtrl'
-    });
-
-  }).factory("countryData", function($http) {
-    return function() {
-      return $http.get('http://api.geonames.org/countryInfoJSON?username=smekala');
-    };
-  })
-  .controller('countryCtrl', ['$scope', 'countryData', function($scope, countryData) {
-    countryData().success(function(data) {
-      var jsonData = data;
-       $scope.result = jsonData.geonames;
-      })
-  }]).controller('capitalCtrl', ['$scope','$http','$routeParams', 'countryData', function($scope,$http, countryData,$routeParams) 
-  {
-    $http.get('http://api.geonames.org/countryInfoJSON?username=smekala').success(function(data){
-      var jsonData = data;
-      console.log("ssunitha");
-      $scope.result = jsonData.geonames;
-
-      /* console.log(typeof(jsonData.geonames));*/
-      for (var key in $scope.result)
-      {
-        if ($scope.result.hasOwnProperty(key))
-        {
-          // here you have access to
-          var cName = $scope.result[key].countryCode;
-          var cName =  encodeURIComponent(cName);
-          /*  console.log(cName);*/
-          var capital = $scope.result[key].capital;
-          var capital = encodeURIComponent(capital);
-          var population = $scope.result[key].population;
-          var population = encodeURIComponent(population);
-          var area = $scope.result[key].areaInSqKm;
-          var area = encodeURIComponent.areaInSqKm;
-          /* console.log(capital);*/
-        }
-
-        var username = "smekala";
-        $http.post('http://api.geonames.org/searchJSON?username='+username+'&name='+capital+'&country='+cName)
-        .success(function(data, status, headers, config) {
-          console.log('Success!');
-          console.log(data);
-          $scope.capitalData = data.geonames;
-        })
-        .error(function(data, status, headers, config) {
-          console.log('Failure :(');
-        });
-
-
-
-        
-
+.config(function($routeProvider){
+  $routeProvider.
+  when('/', {
+    templateUrl : './views/home.html',
+    controller : 'HomeCtrl'
+  }).when('/countries', {
+    templateUrl : './views/country.html',
+    controller : 'AllCountriesCtrl'
+  }).when('/countries/:countryCode/:country', {
+    templateUrl : './views/capitals.html',
+    controller : 'OneCountryCtrl',
+    resolve : {
+      countryCode: function($route, $location) {
+        var countryCode = $route.current.params.countryCode;
+        return countryCode;
+      },
+      country: function($route, $location) {
+        var country= $route.current.params.country;
+        return country;
       }
+    }
+  }).otherwise({
+    redirectTo : '/'
+  }); 
+  }) // end of config
 
+.factory('GeonamesFactory', function($http){
 
+  var userName = "smekala";
+  var apiCountries = "http://api.geonames.org/countryInfo?type=JSON" + "&username=" + userName;
+  var apiCapitals = "http://api.geonames.org/search?type=JSON" + "&username=" + userName;
+  var apiNeighbors = "http://api.geonames.org/neighbours?type=JSON" + "&username=" + userName;
+  var exports = {};
 
-    })
+  exports = {
+    getAllCountries: function() {
+      return $http.get(apiCountries, {cache: true});
+    },
+    getCountry: function(countryCode, country) {
+      return $http.get(apiCountries + "&q=" + country + "&country=" + countryCode, {cache: true});
+    },
+    getCapital: function(countryCode, country, capital) {
+      return $http.get(apiCapitals + "&q=" + country + "&country=" + countryCode + "&name_equals=" + capital, {cache: true});
+    },
+    getNeighbors: function(countryCode) {
+      return $http.get(apiNeighbors + "&country=" + countryCode, {cache: true});
+    }
 
-}
-]);
+  }
 
+  return exports;
+
+  }) //end of Factory
+
+.controller('HomeCtrl', function($scope){
+  $scope.home = "home controller description goes here..";
+  }) // end of HomeCtrl Controller
+
+.controller('AllCountriesCtrl', function($scope, GeonamesFactory){
+  GeonamesFactory.getAllCountries().then(function (countries) {
+    $scope.countries = countries.data.geonames;
+  }); 
+  }) // end of AllCountriesCtrl Controller
+
+.controller('OneCountryCtrl', function($scope, countryCode, country, GeonamesFactory){
+
+    $scope.country = country;       //using this from the resolved route
+    $scope.countryCode = countryCode;   //using this from the resolved route
+
+    var loadCountry = function ()     //the following uses our Factory data
+    {
+      return GeonamesFactory.getCountry(countryCode, country)
+      .then(function (country) { //country retuns the data of single country object
+        $scope.countryPopulation = country.data.geonames[0].population;
+        $scope.countryArea = country.data.geonames[0].areaInSqKm;
+        $scope.countryCapital = country.data.geonames[0].capital;
+      });
+    },
+    loadNeighbors = function ()
+    {
+      return GeonamesFactory.getNeighbors(countryCode)
+      .then(function (neighbors) {
+        $scope.neighbors = neighbors.data.geonames;
+        $scope.neighborCount = neighbors.length;
+      });
+    },
+    loadCapital = function ()
+    {
+      return GeonamesFactory.getCapital(countryCode, country, $scope.countryCapital)
+      .then(function (capital) {
+        console.log("am in loadcapital");
+        console.log(capital);
+        $scope.capitalPopulation = capital.data.geonames[0].population;
+      });
+    };
+    loadCountry().then(loadNeighbors).then(loadCapital);  //promise chain!
+    
+  }); // end of OneCountryCtrl Controller and App
